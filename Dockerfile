@@ -10,5 +10,5 @@ EXPOSE 8080
 CMD service mysql start && \
     sleep 10 && \
     mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root'; FLUSH PRIVILEGES;" && \
-    mysql -u root -proot < /gadgethub.sql && \
+    mysql -u root -proot < gadgethub.sql && \
     catalina.sh run
