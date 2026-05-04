@@ -9,7 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: gadgethub
       MYSQL_USER: project
-      MYSQL_PASSWORD: rayeesali@1510
+      MYSQL_PASSWORD: rayeesali1510
     ports:
       - "3306:3306"
     volumes:
@@ -30,7 +30,7 @@ services:
       DB_PORT: 3306
       DB_NAME: gadgethub
       DB_USER: project
-      DB_PASSWORD: rayeesali@1510
+      DB_PASSWORD: rayeesali1510
 
 volumes:
   mysql_data:
