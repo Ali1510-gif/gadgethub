@@ -8,7 +8,9 @@ COPY ./app/GadgetHub-Website.war /usr/local/tomcat/webapps/ROOT.war
 EXPOSE 8080
 
 CMD service mysql start && \
-    sleep 10 && \
-    mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root'; FLUSH PRIVILEGES;" && \
-    mysql -u root -proot < /gadgethub.sql && \
+    echo "Waiting for MySQL..." && \
+    sleep 15 && \
+    mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; FLUSH PRIVILEGES;" && \
+    mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS gadgethub;" && \
+    mysql -u root -proot gadgethub < /gadgethub.sql && \
     catalina.sh run
