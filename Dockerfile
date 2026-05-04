@@ -1,12 +1,9 @@
-FROM tomcat:8.5-jdk8
+FROM mysql:8.0
 
-# Remove default apps (optional but cleaner)
-RUN rm -rf /usr/local/tomcat/webapps/*
+ENV MYSQL_ROOT_PASSWORD=root
+ENV MYSQL_DATABASE=gadgethub
+ENV MYSQL_USER=project
+ENV MYSQL_PASSWORD=rayeesali1510
 
-# Copy your WAR
-COPY ./app/GadgetHub-Website.war /usr/local/tomcat/webapps/ROOT.war
-
-# Expose port
-EXPOSE 8080
-
-CMD ["catalina.sh", "run"]
+# Copy SQL file inside container
+COPY gadgethub.sql /docker-entrypoint-initdb.d/
