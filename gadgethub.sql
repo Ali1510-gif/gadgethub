@@ -1,0 +1,92 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS GADGETHUB;
+USE GADGETHUB;
+
+-- ================= USERS =================
+CREATE TABLE USERS (
+    USEREMAIL VARCHAR(60) PRIMARY KEY,
+    USERNAME VARCHAR(30),
+    MOBILE VARCHAR(15),
+    ADDRESS VARCHAR(250),
+    PINCODE INT,
+    PASSWORD VARCHAR(20)
+);
+
+-- ================= PRODUCTS =================
+CREATE TABLE PRODUCTS (
+    PID VARCHAR(45) PRIMARY KEY,
+    PNAME VARCHAR(100),
+    PTYPE VARCHAR(20),
+    PINFO VARCHAR(350),
+    PPRICE DECIMAL(12,2),
+    PQUANTITY DECIMAL(18,6),
+    IMAGE LONGBLOB,
+    AVAILABLE CHAR(1)
+);
+
+-- ================= ORDERS =================
+CREATE TABLE ORDERS (
+    ORDERID VARCHAR(45),
+    PRODID VARCHAR(45),
+    QUANTITY DECIMAL(18,6),
+    AMOUNT DECIMAL(10,2),
+    SHIPPED TINYINT,
+    PRIMARY KEY (ORDERID, PRODID),
+    FOREIGN KEY (PRODID) REFERENCES PRODUCTS(PID)
+);
+
+-- ================= TRANSACTIONS =================
+CREATE TABLE TRANSACTIONS (
+    TRANSID VARCHAR(45) PRIMARY KEY,
+    USEREMAIL VARCHAR(60),
+    TRANSTIME DATETIME,
+    AMOUNT DECIMAL(10,2),
+    FOREIGN KEY (USEREMAIL) REFERENCES USERS(USEREMAIL)
+);
+
+-- ================= USERCART =================
+CREATE TABLE USERCART (
+    USEREMAIL VARCHAR(60),
+    PRODID VARCHAR(45),
+    QUANTITY DECIMAL(18,6),
+    FOREIGN KEY (USEREMAIL) REFERENCES USERS(USEREMAIL),
+    FOREIGN KEY (PRODID) REFERENCES PRODUCTS(PID)
+);
+
+-- ================= USERDEMAND =================
+CREATE TABLE USERDEMAND (
+    USEREMAIL VARCHAR(60),
+    PRODID VARCHAR(45),
+    QUANTITY DECIMAL(18,6),
+    PRIMARY KEY (USEREMAIL, PRODID),
+    FOREIGN KEY (USEREMAIL) REFERENCES USERS(USEREMAIL),
+    FOREIGN KEY (PRODID) REFERENCES PRODUCTS(PID)
+);
+
+-- ================= INSERT USERS =================
+INSERT INTO USERS VALUES
+('mohammadrayeesali@gmail.com','Rayees Ali','07394960743','Bharwatiya Ahtamali',272189,'ali@123'),
+('sorrowfulmansadvibes@gmail.com','ali','9919378985','ashoka garden',462023,'ali@123'),
+('afrozaalam192@gmail.com','Afroz Aalam','7870554215','Ashoka garden, Bhopal',462025,'afroz'),
+('er.rayeesali1808@gmail.com','Demo','7870554215','Ashoka Garden, Bhopal',462023,'rayees');
+
+-- ================= INSERT PRODUCTS =================
+INSERT INTO PRODUCTS (PID,PNAME,PTYPE,PINFO,PPRICE,PQUANTITY,AVAILABLE) VALUES
+('P20230423082243','APPLE iPhone 16 Pro (Graphite, 512 GB)','mobile','iPhone 16 advanced dual-camera system',202999,990,'N'),
+('P20230423083830','HP Intel Core i5 11th Gen','laptop','Hp Laptop 8GB/512GB SSD Windows 11',45000,993,'Y'),
+('P20230423084149','Canon EOS 1500D DSLR Camera','camera','Explore different ways to shoot subjects',38499,999,'Y');
+
+-- ================= INSERT ORDERS =================
+INSERT INTO ORDERS VALUES
+('T20260503024337','P20230423084149',1,38499,1),
+('T20260503020003','P20230423082243',1,202999,1);
+
+-- ================= INSERT TRANSACTIONS =================
+INSERT INTO TRANSACTIONS VALUES
+('T20260503024337','sorrowfulmansadvibes@gmail.com','2026-05-03',38499),
+('T20260503020003','afrozaalam192@gmail.com','2026-05-03',243989);
+
+-- ================= INSERT USERCART =================
+INSERT INTO USERCART VALUES
+('mohammadrayeesali@gmail.com','P20230423083830',1),
+('afrozaalam192@gmail.com','P20230423084144',1);

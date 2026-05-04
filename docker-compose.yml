@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  mysql-service:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gadgethub
+      MYSQL_USER: project
+      MYSQL_PASSWORD: rayeesali@1510
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./gadgethub.sql:/docker-entrypoint-initdb.d/init.sql
+
+  tomcat:
+    image: tomcat:8.5
+    container_name: java_app
+    depends_on:
+      - mysql-service
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app/GadgetHub-Website.war:/usr/local/tomcat/webapps/ROOT.war
+    environment:
+      DB_HOST: mysql-service
+      DB_PORT: 3306
+      DB_NAME: gadgethub
+      DB_USER: project
+      DB_PASSWORD: rayeesali@1510
+
+volumes:
+  mysql_data:
