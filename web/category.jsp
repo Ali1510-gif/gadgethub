@@ -1,10 +1,11 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="in.gadgethub.dao.impl.ProductDaoImpl,java.util.*"%>
+<%@page import="in.gadgethub.utility.AppInfo"%>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>Categories of the Products</title>
+        <title>Categories | <%=AppInfo.appName%></title>
     </head>
     <body>
     <li class="nav-item dropdown" style="position: relative">
@@ -18,6 +19,24 @@
             >
             Category
         </a>
+        <%
+
+            String userType = (String) session.getAttribute("userType");
+            if ("admin".equalsIgnoreCase(userType)) { %>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <%
+                ProductDaoImpl productDao = new ProductDaoImpl();
+                List<String> productType = productDao.getAllProductsType();
+                for (String type : productType) {
+                    String str = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
+
+            %>
+            <li><a href="AdminViewServlet?type=<%=type%>" class="dropdown-item"><%=str%></a></li>
+                <%
+                    }
+                %>
+        </ul>
+        <% } else {%>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
             <%
                 ProductDaoImpl productDao = new ProductDaoImpl();
@@ -30,7 +49,7 @@
                 <%
                     }
                 %>
-        </ul>
+        </ul> <%}%>
     </li>
 </body>
 </html>

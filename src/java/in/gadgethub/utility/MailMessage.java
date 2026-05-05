@@ -249,7 +249,7 @@ public class MailMessage {
         JavaMailUtil.sendMail(recipientMailId, subject, htmlTextMessage);
     }
 
-    public static void sendContactConfirmation(String recipientMailId, String name, String email, String message) throws MessagingException {
+    public static void sendContactConfirmation(String name, String email, String message) throws MessagingException {
         String subject = "Thank You for Contacting Us - Your Message Has Been Received";
 
         String htmlTextMessage = "<html><head>"
@@ -268,7 +268,7 @@ public class MailMessage {
                 + "</style>"
                 + "</head><body>"
                 + "<div class='email-container'>"
-                + "<div class='header'><h1>We’ve Received Your Message!</h1></div>"
+                + "<div class='header'><h1>We have Received Your Message!</h1></div>"
                 + "<div class='content'>"
                 + "<p>Hi <strong>" + name + "</strong>,</p>"
                 + "<p>Thank you for reaching out to us. We have received your message and will get back to you as soon as possible. Here’s a summary of your contact request:</p>"
@@ -279,21 +279,64 @@ public class MailMessage {
                 + "</div>"
                 + "<p>If you need immediate assistance, feel free to contact us via phone or email:</p>"
                 + "<ul>"
-                + "<li><strong>Phone:</strong> +91 9303890608</li>"
-                + "<li><strong>Email:</strong> rajnishkushwaha3757@gmail.com</li>"
+                + "<li><strong>Phone:</strong> +91 7394960743</li>"
+                + "<li><strong>Email:</strong> rayeesali1510@gmail.com</li>"
                 + "</ul>"
-                + "<div class='cta'><a href='mailto:rajnishkushwaha3757@gmail.com' class='button'>Contact Us Again</a></div>"
+                + "<div class='cta'><a href='mailto:rayeesali1510@gmail.com' class='button'>Contact Us Again</a></div>"
                 + "<p>We appreciate your patience, and someone from our team will get back to you soon.</p>"
-                + "<p>Best regards,<br/>The Team at [Your Company Name]</p>"
+                + "<p>Best regards,<br/>The Team at GadgetHub</p>"
                 + "</div>"
                 + "<div class='footer'>"
-                + "<p>If you have any further questions, please <a href='mailto:rajnishkushwaha3757@gmail.com'>contact us</a>.</p>"
-                + "<p>&copy; " + java.time.Year.now() + " [Your Company Name]. All rights reserved.</p>"
+                + "<p>If you have any further questions, please <a href='mailto:rayeesali1510@gmail.com'>contact us</a>.</p>"
+                + "<p>&copy; " + java.time.Year.now() + " GadgetHub. All rights reserved.</p>"
                 + "</div>"
                 + "</div>"
                 + "</body></html>";
 
-        JavaMailUtil.sendMail(recipientMailId, subject, htmlTextMessage);
+        JavaMailUtil.sendMail(email, subject, htmlTextMessage);
+        
+        String htmlTextMessageForOwner = "<html><head>"
+        + "<style>"
+        + "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f3f3f3; color: #333; }"
+        + ".email-container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }"
+        + ".header { background: linear-gradient(135deg, #ff6c63, #ff9800); color: #ffffff; padding: 20px; text-align: center; }"
+        + ".header h1 { margin: 0; font-size: 24px; }"
+        + ".content { padding: 20px; }"
+        + ".content p { line-height: 1.6; margin: 10px 0; font-size: 16px; }"
+        + ".summary { background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 10px; }"
+        + ".footer { background-color: #f3f3f3; color: #888; text-align: center; padding: 15px; font-size: 14px; }"
+        + "</style>"
+        + "</head><body>"
+        + "<div class='email-container'>"
+
+        // Header
+        + "<div class='header'><h1>New Contact Request Received</h1></div>"
+
+        // Content
+        + "<div class='content'>"
+        + "<p>Hello <strong>GadgetHub Owner</strong>,</p>"
+        + "<p>You have received a new message from your website contact form. Here are the details:</p>"
+
+        + "<div class='summary'>"
+        + "<p><strong>Name:</strong> " + name + "</p>"
+        + "<p><strong>Email:</strong> " + email + "</p>"
+        + "<p><strong>Message:</strong> " + message + "</p>"
+        + "</div>"
+
+        + "<p>Please respond to the user as soon as possible.</p>"
+        + "<p>You can directly reply to this email or contact the user using the provided details.</p>"
+
+        + "<p>Best regards,<br/>GadgetHub System</p>"
+        + "</div>"
+
+        // Footer
+        + "<div class='footer'>"
+        + "<p>&copy; " + java.time.Year.now() + " GadgetHub. All rights reserved.</p>"
+        + "</div>"
+
+        + "</div>"
+        + "</body></html>";
+        JavaMailUtil.sendMail("rayeesali1510@gmail.com", subject, htmlTextMessageForOwner);
     }
 
     public static void sendDemandFulfilledEmail(String recipientMailId, String name, String prodId, String productName, int requestedQuantity, int availableQuantity) throws MessagingException {
@@ -328,11 +371,11 @@ public class MailMessage {
                 + "<div class='cta'><a href='https://yourwebsite.com/product/" + prodId + "' class='button'>Buy Now</a></div>"
                 + "<p>If you need more assistance or have specific questions, our team is here to help. Reach out to us anytime at the contact details provided below.</p>"
                 + "<p>We truly value your trust and support. Thank you for choosing us, and we look forward to serving you with the best shopping experience.</p>"
-                + "<p>Warm regards,<br/>The Team at [Your Company Name]</p>"
+                + "<p>Warm regards,<br/>The Team at GadgetHub</p>"
                 + "</div>"
                 + "<div class='footer'>"
-                + "<p>If you have any questions, please <a href='mailto:support@yourwebsite.com'>contact us</a>.</p>"
-                + "<p>&copy; " + java.time.Year.now() + " [Your Company Name]. All rights reserved.</p>"
+                + "<p>If you have any questions, please <a href='mailto:rayeesali1510@gmail.com'>contact us</a>.</p>"
+                + "<p>&copy; " + java.time.Year.now() + " GadgetHub. All rights reserved.</p>"
                 + "</div>"
                 + "</div>"
                 + "</body></html>";

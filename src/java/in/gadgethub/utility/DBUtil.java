@@ -17,30 +17,25 @@ import java.sql.Statement;
  */
 public class DBUtil {
      private static Connection conn;
-    public static void openConnection(String dbUrl, String username, String password){
-        if(conn==null){
-            try{
-                conn=DriverManager.getConnection(dbUrl, username, password);
-                System.out.println("Connection opened");
-            }catch(SQLException ex){
-                System.out.println("Error in opening Connection");
-                ex.printStackTrace();
-            }
-        }
+     private static String url;
+     private static String username;
+     private static String password;
+    public static void openConnection(String dbUrl, String dbUsername, String dbPassword){
+        url = dbUrl;
+        username = dbUsername;
+        password = dbPassword;
     }
-    public static void closeConnection(){
-        if(conn!=null){
-            try{
-                conn.close();
-                System.out.println("Connection Closed");
-            }catch(SQLException ex){
-                System.out.println("Error in closing Connection");
-                ex.printStackTrace();
-            }
-        }
-    }
+
     public static Connection provideConnection(){
-        return conn;
+        Connection conn=null;
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection(url,username,password);
+            return conn;
+        }catch(Exception ex){
+            System.out.println("Connection not opened : "+ex.getMessage());
+            throw new RuntimeException("Connection not opened ",ex);
+        }
     }
     public static void closeResultSet(ResultSet rs){
         if(rs!=null){

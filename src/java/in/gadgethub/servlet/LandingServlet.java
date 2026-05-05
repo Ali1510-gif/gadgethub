@@ -9,7 +9,6 @@ import in.gadgethub.dao.impl.CartDaoImpl;
 import in.gadgethub.dao.impl.ProductDaoImpl;
 import in.gadgethub.pojo.ProductPojo;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

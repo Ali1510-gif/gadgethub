@@ -69,4 +69,24 @@ public class OrderPojo {
     private int quantity;
     private double amount;
     private int shipped;
+    private String useremail;
+    private String address;
+
+    public String getUseremail() {
+        return useremail;
+    }
+
+    public void setUseremail(String useremail) {
+        this.useremail = useremail;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+    
+    
 }

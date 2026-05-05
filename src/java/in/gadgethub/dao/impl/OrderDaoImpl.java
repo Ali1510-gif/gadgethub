@@ -3,23 +3,13 @@ package in.gadgethub.dao.impl;
 import in.gadgethub.dao.OrderDao;
 import in.gadgethub.dao.ProductDao;
 import in.gadgethub.dao.UserDao;
-import in.gadgethub.pojo.OrderDetailsPojo;
-import in.gadgethub.pojo.OrderPojo;
-import in.gadgethub.pojo.ProductPojo;
-import in.gadgethub.pojo.TransactionPojo;
-import in.gadgethub.pojo.UsercartPojo;
+import in.gadgethub.pojo.*;
 import in.gadgethub.utility.DBUtil;
 import in.gadgethub.utility.IDUtil;
 import in.gadgethub.utility.MailMessage;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.mail.MessagingException;
 
@@ -27,59 +17,57 @@ public class OrderDaoImpl implements OrderDao {
 
     @Override
     public boolean addOrders(OrderPojo order) {
-        boolean status = false;
-        Connection conn = DBUtil.provideConnection();
-        PreparedStatement ps = null;
-        try {
-            ps = conn.prepareStatement("Insert into orders values(?,?,?,?,?)");
+        String sql = "Insert into orders values(?,?,?,?,?)";
+
+        try (Connection conn = DBUtil.provideConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, order.getOrderId());
             ps.setString(2, order.getProdId());
             ps.setInt(3, order.getQuantity());
             ps.setDouble(4, order.getAmount());
             ps.setInt(5, 0);
-            int count = ps.executeUpdate();
-            status = count > 0;
+
+            return ps.executeUpdate() > 0;
+
         } catch (SQLException ex) {
-            System.out.println("Error in addOder:" + ex);
             ex.printStackTrace();
         }
-        DBUtil.closeStatement(ps);
-        return status;
+        return false;
     }
 
     @Override
     public boolean addTransaction(TransactionPojo transaction) {
-        boolean status = false;
-        Connection conn = DBUtil.provideConnection();
-        PreparedStatement ps = null;
-        try {
-            ps = conn.prepareStatement("Insert into transactions values(?,?,?,?)");
+        String sql = "Insert into transactions values(?,?,?,?)";
+
+        try (Connection conn = DBUtil.provideConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, transaction.getTransId());
             ps.setString(2, transaction.getUserEmail());
-            java.util.Date d1 = transaction.getTransTime();
-            java.sql.Date d2 = new java.sql.Date(d1.getTime());
-            ps.setDate(3, d2);
+            ps.setDate(3, new java.sql.Date(transaction.getTransTime().getTime()));
             ps.setDouble(4, transaction.getAmount());
 
-            int count = ps.executeUpdate();
-            status = count > 0;
+            return ps.executeUpdate() > 0;
+
         } catch (SQLException ex) {
-            System.out.println("Error in addTransaction" + ex);
             ex.printStackTrace();
         }
-        DBUtil.closeStatement(ps);
-        return status;
+        return false;
     }
 
     @Override
     public List<OrderPojo> getAllOrders() {
-        List<OrderPojo> orderList = new ArrayList<>();
-        Connection conn = DBUtil.provideConnection();
-        Statement st = null;
-        ResultSet rs = null;
-        try {
-            st = conn.createStatement();
-            rs = st.executeQuery("select * from Orders");
+        List<OrderPojo> list = new ArrayList<>();
+
+        String sql = "SELECT o.*, u.useremail, u.address FROM orders o " +
+                     "LEFT JOIN transactions t ON t.transid = o.orderid " +
+                     "LEFT JOIN users u ON u.useremail = t.useremail";
+
+        try (Connection conn = DBUtil.provideConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
             while (rs.next()) {
                 OrderPojo order = new OrderPojo();
                 order.setOrderId(rs.getString("orderid"));
@@ -87,172 +75,203 @@ public class OrderDaoImpl implements OrderDao {
                 order.setQuantity(rs.getInt("quantity"));
                 order.setShipped(rs.getInt("shipped"));
                 order.setAmount(rs.getDouble("amount"));
-                orderList.add(order);
+                order.setUseremail(rs.getString("useremail"));
+                order.setAddress(rs.getString("address"));
+                list.add(order);
             }
 
         } catch (SQLException ex) {
-            System.out.println("Error in getAllOrders" + ex);
             ex.printStackTrace();
         }
-        DBUtil.closeStatement(st);
-        DBUtil.closeResultSet(rs);
-        return orderList;
 
+        return list;
     }
 
     @Override
     public List<OrderDetailsPojo> getAllOrderDetails(String userEmailId) {
-        List<OrderDetailsPojo> orderDetailsList = new ArrayList<>();
-        Connection conn = DBUtil.provideConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = conn.prepareStatement("Select p.pid as prodid,o.orderid as orderid,o.shipped as shipped, p.image as image,p.pname as pname, o.quantity as qty, o.amount as amount,t.transtime as time From orders o,products p,transactions t where o.orderid=t.transid and o.prodid=p.pid and t.useremail=?");
+        List<OrderDetailsPojo> list = new ArrayList<>();
+
+        String sql = "Select p.pid as prodid,o.orderid as orderid,o.shipped as shipped," +
+                "p.image as image,p.pname as pname,o.quantity as qty,o.amount as amount," +
+                "t.transtime as time From orders o,products p,transactions t " +
+                "where o.orderid=t.transid and o.prodid=p.pid and t.useremail=?";
+
+        try (Connection conn = DBUtil.provideConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, userEmailId);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                OrderDetailsPojo orderDetails = new OrderDetailsPojo();
-                orderDetails.setOrderId(rs.getString("orderid"));
-                orderDetails.setProdId(rs.getString("prodid"));
-                orderDetails.setProdName(rs.getString("pname"));
-                orderDetails.setQuantity(rs.getInt("qty"));
-                orderDetails.setAmount(rs.getDouble("amount"));
-                orderDetails.setShipped(rs.getInt("shipped"));
-                orderDetails.setTime(rs.getTimestamp("time"));
-                orderDetails.setProdImage(rs.getAsciiStream("image"));
-                orderDetailsList.add(orderDetails);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    OrderDetailsPojo o = new OrderDetailsPojo();
+                    o.setOrderId(rs.getString("orderid"));
+                    o.setProdId(rs.getString("prodid"));
+                    o.setProdName(rs.getString("pname"));
+                    o.setQuantity(rs.getInt("qty"));
+                    o.setAmount(rs.getDouble("amount"));
+                    o.setShipped(rs.getInt("shipped"));
+                    o.setTime(rs.getTimestamp("time"));
+                    o.setProdImage(rs.getAsciiStream("image"));
+                    list.add(o);
+                }
             }
+
         } catch (SQLException ex) {
-            System.out.println("Error occured in getAllOrderDetails method............................" + ex);
             ex.printStackTrace();
         }
-        DBUtil.closeResultSet(rs);
-        DBUtil.closeStatement(ps);
-        return orderDetailsList;
 
+        return list;
     }
 
     @Override
     public String shipNow(String orderId, String prodId) {
         String status = "Failure!";
-        Connection conn = DBUtil.provideConnection();
-        PreparedStatement ps = null;
-        try {
-            ps = conn.prepareStatement("update orders set shipped=1 where orderid=? and prodid=?");
+
+        String sql = "update orders set shipped=1 where orderid=? and prodid=?";
+
+        try (Connection conn = DBUtil.provideConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, orderId);
             ps.setString(2, prodId);
-            int count = ps.executeUpdate();
-            if (count > 0) {
-                status = "Order has been shipped successfully and sent mail";
 
-                //send email for ordershippedsuccess
-                String userEmail = "rajneeshkushwaha3757@gmail.com";
-                UserDao userDao = new UserDaoImpl();
-                String userName = userDao.getUserFirstName(userEmail);
-                ProductDao productDao = new ProductDaoImpl();
-                ProductPojo products = productDao.getProductDetails(prodId);
-                MailMessage.orderShippedSuccess(userEmail, userName, products.getProdName(), products.getProdQuantity(), orderId);
-                System.out.println("Mail Sent Successfully");
+            if (ps.executeUpdate() > 0) {
+
+                status = "Order shipped successfully";
+
+                try {
+                    String userEmail = "rajneeshkushwaha3757@gmail.com";
+
+                    UserDao userDao = new UserDaoImpl();
+                    String userName = userDao.getUserFirstName(userEmail);
+
+                    ProductDao productDao = new ProductDaoImpl();
+                    ProductPojo product = productDao.getProductDetails(prodId);
+
+                    MailMessage.orderShippedSuccess(
+                            userEmail,
+                            userName,
+                            product.getProdName(),
+                            product.getProdQuantity(),
+                            orderId
+                    );
+
+                } catch (MessagingException ex) {
+                    ex.printStackTrace();
+                }
             }
+
         } catch (SQLException ex) {
-            System.out.println("Error occured in shipNow method............................" + ex);
-            ex.printStackTrace();
-        } catch (MessagingException ex) {
-            System.out.println("Exception occured in registerUser method............................");
             ex.printStackTrace();
         }
-        DBUtil.closeStatement(ps);
+
         return status;
     }
 
     @Override
     public String paymentSuccess(String username, double paidAmount) {
         String status = "Order Placement Failed!!";
-        CartDaoImpl cartDao = new CartDaoImpl();
-        List<UsercartPojo> cartList = cartDao.getAllCartItems(username);
-        if (cartList.isEmpty()) {
-            return status;
-        }
-        String transactionId = IDUtil.generateTransId();
-        TransactionPojo trPojo = new TransactionPojo();
-        trPojo.setTransId(transactionId);
-        trPojo.setUserEmail(username);
-        trPojo.setAmount(paidAmount);
-        trPojo.setTransTime(new java.util.Date());
-        boolean result = addTransaction(trPojo);
-        if (result == false) {
-            return status;
-        }
-        boolean ordered = true;
-        ProductDaoImpl productDAO = new ProductDaoImpl();
-        for (UsercartPojo cartPojo : cartList) {
-            double amount = productDAO.getProductPrice(cartPojo.getProdId()) * cartPojo.getQuantity();
-            OrderPojo order = new OrderPojo();
-            order.setOrderId(transactionId);
-            order.setProdId(cartPojo.getProdId());
-            order.setQuantity(cartPojo.getQuantity());
-            order.setAmount(amount);
-            order.setShipped(0);
-            ordered = addOrders(order);
-            if (!ordered) {
-                break;
-            }
-            ordered = cartDao.removeAProduct(cartPojo.getUserEmail(), cartPojo.getProdId());
-            if (!ordered) {
-                break;
-            }
-            ordered = productDAO.sellNProduct(cartPojo.getProdId(), cartPojo.getQuantity());
-            if (!ordered) {
-                break;
-            }
 
-        }
-        if (ordered) {
-            status = "Order Placed Successfully!";
-            System.out.println("Transaction successful:" + transactionId);
-            try {
-                String userEmail=username;
-                UserDao userDao = new UserDaoImpl();
-                String userName = userDao.getUserFirstName(userEmail);
-                ProductDao productDao = new ProductDaoImpl();
-                String prodId="";
-                for(UsercartPojo cartPojo:cartList){
-                    prodId=cartPojo.getProdId();
+        try (Connection conn = DBUtil.provideConnection()) {
+
+            conn.setAutoCommit(false); // ⚠️ manual TX
+
+            CartDaoImpl cartDao = new CartDaoImpl();
+            List<UsercartPojo> cartList = cartDao.getAllCartItems(username);
+
+            if (cartList.isEmpty()) return status;
+
+            String transactionId = IDUtil.generateTransId();
+
+            try (PreparedStatement psTrans =
+                         conn.prepareStatement("INSERT INTO transactions VALUES(?,?,?,?)");
+                 PreparedStatement psOrder =
+                         conn.prepareStatement("INSERT INTO orders VALUES(?,?,?,?,?)")) {
+
+                // insert transaction
+                psTrans.setString(1, transactionId);
+                psTrans.setString(2, username);
+                psTrans.setDate(3, new java.sql.Date(System.currentTimeMillis()));
+                psTrans.setDouble(4, paidAmount);
+
+                if (psTrans.executeUpdate() <= 0) {
+                    conn.rollback();
+                    return status;
                 }
-                int qty=productDao.getProductQuantity(prodId);
-                MailMessage.orderPlacedSuccess(userEmail, userName,qty,transactionId);
-                System.out.println("Mail Sent Successfully");
-            } catch (MessagingException ex) {
-                System.out.println("Exception occured in registerUser method............................");
-                ex.printStackTrace();
-            }
-        } else {
-            System.out.println("Transaction failed:" + transactionId);
 
+                ProductDaoImpl productDAO = new ProductDaoImpl();
+                boolean ordered = true;
+
+                for (UsercartPojo cart : cartList) {
+
+                    double amount = productDAO.getProductPrice(cart.getProdId()) * cart.getQuantity();
+
+                    psOrder.setString(1, transactionId);
+                    psOrder.setString(2, cart.getProdId());
+                    psOrder.setInt(3, cart.getQuantity());
+                    psOrder.setDouble(4, amount);
+                    psOrder.setInt(5, 0);
+
+                    if (psOrder.executeUpdate() <= 0 ||
+                        !cartDao.removeAProduct(cart.getUserEmail(), cart.getProdId()) ||
+                        !productDAO.sellNProduct(cart.getProdId(), cart.getQuantity())) {
+
+                        ordered = false;
+                        break;
+                    }
+                }
+
+                if (ordered) {
+                    conn.commit();
+                    status = "Order Placed Successfully!";
+
+                    try {
+                        UserDao userDao = new UserDaoImpl();
+                        String userName = userDao.getUserFirstName(username);
+
+                        MailMessage.orderPlacedSuccess(username, userName, 0, transactionId);
+
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    conn.rollback();
+                }
+
+            } catch (Exception e) {
+                conn.rollback();
+                e.printStackTrace();
+            } finally {
+                conn.setAutoCommit(true); // restore
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         return status;
     }
 
     @Override
     public int getSoldQuantity(String prodId) {
-        Connection conn = DBUtil.provideConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int quantity = 0;
-        try {
-            ps = conn.prepareStatement("select sum(quantity)as quant from orders where prodid=?");
+        String sql = "select sum(quantity) from orders where prodid=?";
+
+        try (Connection conn = DBUtil.provideConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, prodId);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                quantity = rs.getInt(1);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
 
         } catch (SQLException ex) {
-            System.out.println("Error occured in getSoldQuantity method" + ex);
             ex.printStackTrace();
         }
-        DBUtil.closeStatement(ps);
-        DBUtil.closeResultSet(rs);
-        return quantity;
+
+        return 0;
     }
 }

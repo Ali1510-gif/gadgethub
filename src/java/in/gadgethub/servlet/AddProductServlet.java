@@ -10,9 +10,9 @@ import in.gadgethub.dao.impl.ProductDaoImpl;
 import in.gadgethub.pojo.ProductPojo;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +23,8 @@ import javax.servlet.http.Part;
  *
  * @author Rayee
  */
+
+@MultipartConfig
 public class AddProductServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -46,6 +48,9 @@ public class AddProductServlet extends HttpServlet {
         double prodPrice = 0.0;
         int prodQuantity = 0;
         String priceParam = request.getParameter("price");
+        System.out.println("Price is : "+priceParam);
+        System.out.println("Name is : "+prodName);
+        System.out.println("info is : "+prodInfo);
         if (priceParam != null) {
             try {
                 prodPrice = Double.parseDouble(priceParam);

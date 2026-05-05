@@ -54,15 +54,7 @@ public class UnshippedItemServlet extends HttpServlet {
         OrderDao orderDao = new OrderDaoImpl();
         UserDao userDao = new UserDaoImpl();
         List<OrderPojo> orders = orderDao.getAllOrders(); // Fetch all orders
-        Map<String, String> user_Id = new HashMap<>();
-        Map<String, String> user_address = new HashMap<>();
-        for(OrderPojo order:orders){
-            user_Id.put(order.getOrderId(),userName);
-            user_address.put(userName, userDao.getUserAddr(userName));
-        }
         request.setAttribute("orders", orders);
-        request.setAttribute("user_Id", user_Id);
-        request.setAttribute("user_address", user_address);
 
         // Forward to JSP
         RequestDispatcher rd = request.getRequestDispatcher("unshippedItems.jsp");

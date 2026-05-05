@@ -39,7 +39,7 @@ public class ContactInformationServlet extends HttpServlet {
         String status = "Mail sent successfully";
         try {
             RequestDispatcher rd = request.getRequestDispatcher("LandingServlet");
-            MailMessage.sendContactConfirmation("rajneeshkushwaha3757@gmail.com", name, email, message);
+            MailMessage.sendContactConfirmation(name, email, message);
             System.out.println("Mail Sent Successfully");
             request.setAttribute("message",status);
             rd.forward(request, response);
